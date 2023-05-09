@@ -1,5 +1,5 @@
 import type { SyntheticEvent, ReactElement } from 'react'
-import { Accordion, AccordionDetails, AccordionSummary, Box, Skeleton } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Box, Skeleton, Typography } from '@mui/material'
 import { OperationType, type SafeTransaction } from '@safe-global/safe-core-sdk-types'
 import {
   type DecodedDataResponse,
@@ -23,6 +23,36 @@ import Multisend from '@/components/transactions/TxDetails/TxData/DecodedData/Mu
 type DecodedTxProps = {
   tx?: SafeTransaction
   txId?: string
+}
+
+const HumanReadable = ({ data }: { data: DecodedDataResponse }): ReactElement => {
+  const parameters = data.parameters || []
+  const method = data.method || ''
+  return (
+    <>
+      <Typography component="span">{method}</Typography>
+      <Typography component="span" color="border.main">
+        (
+      </Typography>
+      {parameters.map(({ name, type }, index) => (
+        <>
+          {index > 0 && (
+            <Typography component="span" color="border.main">
+              , &nbsp;
+            </Typography>
+          )}
+          <Typography component="span" color="text.secondary">
+            {type}
+          </Typography>
+          &nbsp;
+          <Typography component="span">{name}</Typography>
+        </>
+      ))}
+      <Typography component="span" color="border.main">
+        )
+      </Typography>
+    </>
+  )
 }
 
 const DecodedTx = ({ tx, txId }: DecodedTxProps): ReactElement | null => {
@@ -58,14 +88,25 @@ const DecodedTx = ({ tx, txId }: DecodedTxProps): ReactElement | null => {
         </ErrorBoundary>
       )}
 
-      <Accordion
-        elevation={0}
-        onChange={onChangeExpand}
-        sx={!tx ? { pointerEvents: 'none' } : undefined}
-        defaultExpanded={isMultisend}
-        key={isMultisend.toString()}
-      >
-        <AccordionSummary>Transaction details</AccordionSummary>
+      {isMultisend && (
+        <Box my={2}>
+          <Multisend
+            txData={{
+              dataDecoded: decodedData,
+              to: { value: tx?.data.to || '' },
+              value: tx?.data.value,
+              operation: tx?.data.operation === OperationType.DelegateCall ? Operation.DELEGATE : Operation.CALL,
+              trustedDelegateCallTarget: false,
+            }}
+            compact
+          />
+        </Box>
+      )}
+
+      <Accordion elevation={0} onChange={onChangeExpand} sx={!tx ? { pointerEvents: 'none' } : undefined}>
+        <AccordionSummary>
+          {decodedData ? <HumanReadable data={decodedData} /> : 'Transaction details'}
+        </AccordionSummary>
 
         <AccordionDetails>
           {txDetails ? (
@@ -84,22 +125,6 @@ const DecodedTx = ({ tx, txId }: DecodedTxProps): ReactElement | null => {
             <ErrorMessage error={decodedDataError}>Failed decoding transaction data</ErrorMessage>
           ) : (
             decodedDataLoading && <Skeleton />
-          )}
-
-          {isMultisend && (
-            <Box mt={2}>
-              <Multisend
-                txData={{
-                  dataDecoded: decodedData,
-                  to: { value: tx?.data.to || '' },
-                  value: tx?.data.value,
-                  operation: tx?.data.operation === OperationType.DelegateCall ? Operation.DELEGATE : Operation.CALL,
-                  trustedDelegateCallTarget: false,
-                }}
-                variant="outlined"
-                noHeader
-              />
-            </Box>
           )}
         </AccordionDetails>
       </Accordion>
