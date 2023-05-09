@@ -10,7 +10,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore'
 import IconButton from '@mui/material/IconButton'
 import SvgIcon from '@mui/material/SvgIcon'
 import Box from '@mui/material/Box'
-import { Link as MuiLink } from '@mui/material'
+import { Grid, Link as MuiLink } from '@mui/material'
 import { type ChainInfo } from '@safe-global/safe-gateway-typescript-sdk'
 
 import AddIcon from '@/public/images/common/add.svg'
@@ -30,6 +30,9 @@ import useSafeInfo from '@/hooks/useSafeInfo'
 import Track from '@/components/common/Track'
 import { OVERVIEW_EVENTS } from '@/services/analytics/events/overview'
 import LoadingIcon from '@/public/images/common/loading.svg'
+import useWallet from '@/hooks/wallets/useWallet'
+import useConnectWallet from '@/components/common/ConnectWallet/useConnectWallet'
+import KeyholeIcon from '@/components/common/icons/KeyholeIcon'
 
 export const _shouldExpandSafeList = ({
   isCurrentChain,
@@ -58,7 +61,8 @@ export const _shouldExpandSafeList = ({
 }
 
 const MAX_EXPANDED_SAFES = 3
-const NO_SAFE_MESSAGE = 'Create a new safe or add'
+const NO_WALLET_MESSAGE = 'Connect a wallet to view your Safe Accounts\n or to create a new one'
+const NO_SAFE_MESSAGE = 'Create a new Safe Account or add'
 
 const SafeList = ({ closeDrawer }: { closeDrawer?: () => void }): ReactElement => {
   const router = useRouter()
@@ -67,12 +71,15 @@ const SafeList = ({ closeDrawer }: { closeDrawer?: () => void }): ReactElement =
   const { configs } = useChains()
   const ownedSafes = useOwnedSafes()
   const addedSafes = useAppSelector(selectAllAddedSafes)
+  const wallet = useWallet()
+  const handleConnect = useConnectWallet()
 
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const toggleOpen = (chainId: string, open: boolean) => {
     setOpen((prev) => ({ ...prev, [chainId]: open }))
   }
 
+  const hasWallet = !!wallet
   const hasNoSafes = Object.keys(ownedSafes).length === 0 && Object.keys(addedSafes).length === 0
   const isWelcomePage = router.pathname === AppRoutes.welcome
   const isSingleTxPage = router.pathname === AppRoutes.transactions.tx
@@ -118,21 +125,43 @@ const SafeList = ({ closeDrawer }: { closeDrawer?: () => void }): ReactElement =
 
       {hasNoSafes && (
         <Box display="flex" flexDirection="column" alignItems="center" py={6}>
-          <SvgIcon component={LoadingIcon} inheritViewBox sx={{ width: '85px', height: '80px' }} />
-          <Typography variant="body2" color="primary.light" textAlign="center" mt={3}>
-            {!isWelcomePage ? (
-              <Link href={{ pathname: AppRoutes.welcome, query: router.query }} passHref>
-                <MuiLink onClick={closeDrawer}>{NO_SAFE_MESSAGE}</MuiLink>
-              </Link>
-            ) : (
-              <>{NO_SAFE_MESSAGE}</>
-            )}{' '}
-            an existing one
-          </Typography>
+          {hasWallet ? (
+            <>
+              <SvgIcon component={LoadingIcon} inheritViewBox sx={{ width: '85px', height: '80px' }} />
+
+              <Typography variant="body2" color="primary.light" textAlign="center" mt={3}>
+                {!isWelcomePage ? (
+                  <Link href={{ pathname: AppRoutes.welcome, query: router.query }} passHref>
+                    <MuiLink onClick={closeDrawer}>{NO_SAFE_MESSAGE}</MuiLink>
+                  </Link>
+                ) : (
+                  <>{NO_SAFE_MESSAGE}</>
+                )}{' '}
+                an existing one
+              </Typography>
+            </>
+          ) : (
+            <>
+              <Typography variant="body2" color="primary.light" textAlign="center" mb={1} whiteSpace="pre-wrap">
+                {NO_WALLET_MESSAGE}
+              </Typography>
+
+              <Grid item xs={12} md={6} display="flex" flexDirection="column" alignItems="center" gap={1}>
+                <Box width={100} height={100} display="flex" alignItems="center" justifyContent="center">
+                  <KeyholeIcon />
+                </Box>
+
+                <Button onClick={handleConnect} variant="contained" size="stretched" disableElevation>
+                  Connect wallet
+                </Button>
+              </Grid>
+            </>
+          )}
         </Box>
       )}
 
       {!hasNoSafes &&
+        hasWallet &&
         configs.map((chain) => {
           const ownedSafesOnChain = ownedSafes[chain.chainId] ?? []
           const addedSafesOnChain = addedSafes[chain.chainId] ?? {}

@@ -21,12 +21,14 @@ import LoadSafeIcon from '@/public/images/welcome/load-safe.svg'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useTheme } from '@mui/material/styles'
 import { DataWidget } from '@/components/welcome/DataWidget'
+import useWallet from '@/hooks/wallets/useWallet'
 
 const NewSafe = () => {
   const [expanded, setExpanded] = useState(true)
   const router = useRouter()
   const theme = useTheme()
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'))
+  const wallet = useWallet()
 
   useEffect(() => {
     setExpanded(!isSmallScreen)
@@ -98,7 +100,10 @@ const NewSafe = () => {
 
                 <span style={{ flex: 1 }} />
                 <Track {...CREATE_SAFE_EVENTS.CREATE_BUTTON}>
-                  <Button variant="contained" onClick={() => router.push(AppRoutes.newSafe.create)}>
+                  <Button
+                    variant={wallet ? 'contained' : 'outlined'}
+                    onClick={() => router.push(AppRoutes.newSafe.create)}
+                  >
                     + Create new Account
                   </Button>
                 </Track>
@@ -109,11 +114,11 @@ const NewSafe = () => {
               <Paper className={css.createAddCard}>
                 <SvgIcon component={LoadSafeIcon} inheritViewBox sx={{ width: '42px', height: '42px' }} />
                 <Typography variant="h3" fontWeight={700} mb={1} mt={3}>
-                  Add existing Safe Account
+                  Add existing Account
                 </Typography>
 
                 <Typography variant="body2" mb={3}>
-                  Already have an Account? Add it via its address.
+                  Already have a Safe Account? Add it via its address.
                 </Typography>
 
                 <span style={{ flex: 1 }} />
