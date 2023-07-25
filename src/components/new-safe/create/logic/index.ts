@@ -21,7 +21,7 @@ import type { AppDispatch, AppThunk } from '@/store'
 import { showNotification } from '@/store/notificationsSlice'
 import { SafeFactory } from '@safe-global/safe-core-sdk'
 import type Safe from '@safe-global/safe-core-sdk'
-import type { DeploySafeProps } from '@safe-global/safe-core-sdk'
+import type { DeploySafeProps, ContractNetworksConfig } from '@safe-global/safe-core-sdk'
 import { createEthersAdapter } from '@/hooks/coreSDK/safeCoreSDK'
 import type { PredictSafeProps } from '@safe-global/safe-core-sdk/dist/src/safeFactory'
 import { backOff } from 'exponential-backoff'
@@ -59,13 +59,25 @@ export const getSafeDeployProps = (
   }
 }
 
+const config: ContractNetworksConfig = {
+  '1998': {
+    safeMasterCopyAddress: '0xF27df6a106C39c7172354A60B93bE94dB9dE3C64',
+    safeProxyFactoryAddress: '0xfA878DE58645eA4d9eBef1c2AD00Ff0Fef009c1B',
+    multiSendAddress: '0x72358E34B79764B7DD46C22D267be3b55d2F7f36',
+    multiSendCallOnlyAddress: '0xd230431648aE3a275D010221b9dba2b25c1fcB67',
+    fallbackHandlerAddress: '0x96363633362A56e4a530acfd0325c7EFb7e87b40',
+    signMessageLibAddress: '0xa346799Afe061dB4bc9e6926f643A0968F85cb4e',
+    createCallAddress: '0x41342B1029Dc29023dDc9d2Eb2b91b22bb6324Bf',
+  },
+}
+
 /**
  * Create a Safe creation transaction via Core SDK and submits it to the wallet
  */
 export const createNewSafe = async (ethersProvider: Web3Provider, props: DeploySafeProps): Promise<Safe> => {
   const ethAdapter = createEthersAdapter(ethersProvider)
 
-  const safeFactory = await SafeFactory.create({ ethAdapter })
+  const safeFactory = await SafeFactory.create({ ethAdapter, isL1SafeMasterCopy: true, contractNetworks: config })
   return safeFactory.deploySafe(props)
 }
 
@@ -75,7 +87,7 @@ export const createNewSafe = async (ethersProvider: Web3Provider, props: DeployS
 export const computeNewSafeAddress = async (ethersProvider: Web3Provider, props: PredictSafeProps): Promise<string> => {
   const ethAdapter = createEthersAdapter(ethersProvider)
 
-  const safeFactory = await SafeFactory.create({ ethAdapter })
+  const safeFactory = await SafeFactory.create({ ethAdapter, isL1SafeMasterCopy: true, contractNetworks: config })
   return safeFactory.predictSafeAddress(props)
 }
 

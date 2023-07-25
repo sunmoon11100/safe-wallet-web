@@ -82,7 +82,7 @@ const getSafeContractDeployment = (chain: ChainInfo, safeVersion: string): Singl
     getDeployment({
       version: safeVersion,
     }) ||
-    // In case we couldn't find a valid deployment and it's a version before 1.0.0 we return v1.0.0 to allow a minimum compatibility
+    // In case we couldn't find a valid deployment, and it's a version before 1.0.0 we return v1.0.0 to allow a minimum compatibility
     (useOldestContractVersion
       ? getDeployment({
           version: '1.0.0',
@@ -97,6 +97,7 @@ export const getReadOnlyGnosisSafeContract = (chain: ChainInfo, safeVersion: str
   return ethAdapter.getSafeContract({
     singletonDeployment: getSafeContractDeployment(chain, safeVersion),
     ..._getValidatedGetContractProps(chain.chainId, safeVersion),
+    customContractAddress: chain.chainId === '1998' ? '0xF27df6a106C39c7172354A60B93bE94dB9dE3C64' : undefined,
   })
 }
 
@@ -109,7 +110,7 @@ const getMultiSendContractDeployment = (chainId: string) => {
 export const getMultiSendContractAddress = (chainId: string): string | undefined => {
   const deployment = getMultiSendContractDeployment(chainId)
 
-  return deployment?.networkAddresses[chainId]
+  return chainId === '1998' ? '0x72358E34B79764B7DD46C22D267be3b55d2F7f36' : deployment?.networkAddresses[chainId]
 }
 
 // MultiSendCallOnly
@@ -121,7 +122,7 @@ const getMultiSendCallOnlyContractDeployment = (chainId: string) => {
 export const getMultiSendCallOnlyContractAddress = (chainId: string): string | undefined => {
   const deployment = getMultiSendCallOnlyContractDeployment(chainId)
 
-  return deployment?.networkAddresses[chainId]
+  return chainId === '1998' ? '0xd230431648aE3a275D010221b9dba2b25c1fcB67' : deployment?.networkAddresses[chainId]
 }
 
 export const getMultiSendCallOnlyContract = (
@@ -134,6 +135,7 @@ export const getMultiSendCallOnlyContract = (
   return ethAdapter.getMultiSendCallOnlyContract({
     singletonDeployment: getMultiSendCallOnlyContractDeployment(chainId),
     ..._getValidatedGetContractProps(chainId, safeVersion),
+    customContractAddress: chainId === '1998' ? '0xd230431648aE3a275D010221b9dba2b25c1fcB67' : undefined,
   })
 }
 
@@ -146,6 +148,7 @@ export const getReadOnlyMultiSendCallOnlyContract = (
   return ethAdapter.getMultiSendCallOnlyContract({
     singletonDeployment: getMultiSendCallOnlyContractDeployment(chainId),
     ..._getValidatedGetContractProps(chainId, safeVersion),
+    customContractAddress: chainId === '1998' ? '0xd230431648aE3a275D010221b9dba2b25c1fcB67' : undefined,
   })
 }
 
@@ -169,6 +172,7 @@ export const getReadOnlyProxyFactoryContract = (chainId: string, safeVersion: st
   return ethAdapter.getSafeProxyFactoryContract({
     singletonDeployment: getProxyFactoryContractDeployment(chainId),
     ..._getValidatedGetContractProps(chainId, safeVersion),
+    customContractAddress: chainId === '1998' ? '0xfA878DE58645eA4d9eBef1c2AD00Ff0Fef009c1B' : undefined,
   })
 }
 
@@ -195,6 +199,7 @@ export const getReadOnlyFallbackHandlerContract = (
   return ethAdapter.getCompatibilityFallbackHandlerContract({
     singletonDeployment: getFallbackHandlerContractDeployment(chainId),
     ..._getValidatedGetContractProps(chainId, safeVersion),
+    customContractAddress: chainId === '1998' ? '0x96363633362A56e4a530acfd0325c7EFb7e87b40' : undefined,
   })
 }
 
@@ -212,5 +217,6 @@ export const getReadOnlySignMessageLibContract = (
   return ethAdapter.getSignMessageLibContract({
     singletonDeployment: getSignMessageLibContractDeployment(chainId),
     ..._getValidatedGetContractProps(chainId, safeVersion),
+    customContractAddress: chainId === '1998' ? '0xa346799Afe061dB4bc9e6926f643A0968F85cb4e' : undefined,
   })
 }
